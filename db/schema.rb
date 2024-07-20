@@ -18,9 +18,11 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_20_032209) do
   end
 
   create_table "games", force: :cascade do |t|
-    t.integer "game_id"
-    t.json "players"
-    t.json "cards"
+    t.integer "settings_id"
+    t.json "dealer_cards", default: []
+    t.json "deck_cards", default: []
+    t.json "players", default: {}
+    t.integer "status", default: 0
   end
 
   create_table "messages", force: :cascade do |t|
@@ -32,9 +34,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_20_032209) do
   create_table "user_games", force: :cascade do |t|
     t.integer "user_id"
     t.integer "game_id"
-    t.integer "point"
+    t.integer "seat_id"
     t.integer "bet"
-    t.json "cards"
+    t.json "cards", default: []
   end
 
   create_table "users", force: :cascade do |t|

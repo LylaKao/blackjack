@@ -12,5 +12,7 @@ Rails.application.routes.draw do
   mount ActionCable.server => '/cable'
 
   get 'rooms/show'
-  root :to => "welcome#index"
+  root :to => "game#index"
+
+  resources :user_games, only: [:create, :destroy]
 end

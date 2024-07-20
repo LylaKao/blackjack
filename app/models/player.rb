@@ -1,12 +1,26 @@
 class Player
-  attr_reader :seat_id, :bet, :name, :cards
+  attr_reader :seat_id, :bet, :cards, :status
 
-  def initialize(seat_id, bet, user_id = 0, name = "")
+  STATUS = { pending: 0, active: 1 }
+
+  def initialize(seat_id, bet, user_id = 0)
     @seat_id = seat_id
     @bet = bet
     @user_id = user_id
-    @name = name
     @cards = []
+    @status = :pending
+  end
+
+  def name
+    @name ||= User.find(@user_id).name
+  end
+
+  def active?
+    @status == :active
+  end
+
+  def active!
+    @status = :active
   end
 
   def take_card(card)
