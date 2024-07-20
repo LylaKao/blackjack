@@ -14,5 +14,5 @@ Rails.application.routes.draw do
   get 'rooms/show'
   root :to => "game#index"
 
-  resources :user_games, only: [:create, :destroy]
+  resources :user_games, only: [:new, :create, :destroy]
 end

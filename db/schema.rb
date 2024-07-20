@@ -18,7 +18,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_20_032209) do
   end
 
   create_table "games", force: :cascade do |t|
-    t.integer "settings_id"
+    t.integer "game_setting_id"
     t.json "dealer_cards", default: []
     t.json "deck_cards", default: []
     t.json "players", default: {}

@@ -1,6 +1,16 @@
 class UserGamesController < ApplicationController
   before_action :fetch_current_game
 
+  def new
+    @min_bet = @game.settings.min_bet
+    @seat_id = user_game_params[:seat_id]
+
+    # Show bet modal
+    respond_to do |format|
+      format.js { render 'new' }
+    end
+  end
+
   def create
     ActiveRecord::Base.transaction do
       user_game = current_user.user_games.build(game_id: @game.id)

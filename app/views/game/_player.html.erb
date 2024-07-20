@@ -1,5 +1,5 @@
 <div class="player panel panel-default">
-  <div class="player-name panel-header">
+  <div class="player-name panel-heading">
     <%= player&.name %>
   </div>
   <div class="player-bet panel-content">
@@ -21,6 +21,6 @@
     <% end %>
   </div>
   <div class="player-points panel-content">
-      <%= button_to "Sit Here", user_games_path(seat_id: seat_id), method: :post, class: "btn btn-default" if player.nil? %>
+    <%= button_to "Sit Here", new_user_game_path(seat_id: seat_id), method: :get, class: "btn btn-default", remote: true if player.nil? %>
   </div>
 </div>

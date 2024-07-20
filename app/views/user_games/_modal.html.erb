@@ -1,0 +1,29 @@
+<div class="modal fade" id="betModal" tabindex="-1" role="dialog" aria-labelledby="betModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="betModalLabel">Sit Down</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <%= form_for '', url: user_games_path do |f| %>
+        <div class="modal-body">
+          <div class="form-group">
+          <%= f.label :bet %> <i><%= "(Min bet: #{min_bet})" %></i><br />
+            <%= f.text_field :bet, class: "form-control" %>
+          </div>
+          <div class="form-group d-none">
+            <%= f.label :seat_id %>
+            <%= f.text_field :seat_id, value: "#{seat_id}", class: "form-control", readonly: true %>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <%= f.submit "Sit Down", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

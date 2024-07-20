@@ -26,3 +26,8 @@
   </tr>
 </table>
 </div>
+
+<!-- rendering partial -->
+<div id="betUserModal">
+ <%= render 'user_games/modal', min_bet: @game.settings.min_bet, seat_id: 0 %>
+</div>

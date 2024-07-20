@@ -1,9 +1,11 @@
 class Game < ApplicationRecord
-  attr_reader :settings, :dealer
+  attr_reader :dealer
 
   DEFAULT_SETTINGS_ID = 1
 
   enum status: { pending: 0, started: 1, finished: 2 }
+
+  belongs_to :settings, class_name: "GameSetting", foreign_key: "settings_id"
 
   def self.create_or_get_current_game(settings_id = DEFAULT_SETTINGS_ID)
     game = Game.last
@@ -18,7 +20,7 @@ class Game < ApplicationRecord
   end
 
   def init_settings(settings_id)
-    @settings = GameSetting.find(settings_id)
+    settings = GameSetting.find(settings_id)
 
     # {seat_id: player}
     @dealer = Dealer.new
@@ -79,7 +81,7 @@ class Game < ApplicationRecord
 
   def initial_cards
     deck_cards = []
-    @settings.deck_count.times do
+    settings.deck_count.times do
       deck_cards += Deck.new.cards
     end
     deck_cards.shuffle!
