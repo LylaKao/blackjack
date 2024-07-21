@@ -31,6 +31,6 @@
   </div>
 <% elsif @current_user_seat_id == nil %>
   <div>
-    <%= button_to "Sit Here", new_user_game_path(seat_id: seat_id), method: :get, class: "btn btn-default btn-block", remote: true if player.nil? %>
+    <%= link_to "Sit Here", new_user_game_path({seat_id: seat_id}), class: "btn btn-default btn-block", remote: true if player.nil? %>
   </div>
 <% end %>
