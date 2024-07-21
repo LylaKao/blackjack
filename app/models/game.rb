@@ -54,24 +54,31 @@ class Game < ApplicationRecord
     active_user_games.values.map(&:active!)
   end
 
-  def add_user(user, seat_id, bet)
+  def add_user(user_id, seat_id, bet)
 
     raise "Seat #{seat_id} is already taken" if user_games.any? { |ug| ug.seat_id == seat_id }
-    raise "You are already in the game" if user_games.any? { |ug| ug.user_id == user.id }
+    raise "You are already in the game" if user_games.any? { |ug| ug.user_id == user_id }
     raise "You can't join the game" if user_games.size >= settings.max_players
-    raise "You don't have enough point" if user.point < bet
     raise "You can't bet less than minimum bet (#{settings.min_bet})" if bet < settings.min_bet
+
+    user = User.find(user_id)
+    raise "You don't have enough point" if user.point < bet
 
     user_game = user.user_games.build(game_id: id)
     user_game.seat_id = seat_id
     user_game.bet = bet
     user_game.save
+
+    data = { type: 'user_joined', nickname: user.nickname, seat_id: seat_id, bet: bet }
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, data)
   end
 
   def remove_user(user_id)
-    byebug
     user_game = user_games.find_by(user_id: user_id)
+    seat_id = user_game.seat_id
     user_game.destroy
+
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "user_left", seat_id: seat_id })
   end
 
   def deal_cards_to_active_users(show = true)

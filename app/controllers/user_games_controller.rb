@@ -15,7 +15,7 @@ class UserGamesController < ApplicationController
     seat_id = user_game_params[:seat_id]
     bet = user_game_params[:bet].to_i
 
-    if @game.add_user(current_user, seat_id, bet)
+    if @game.add_user(current_user.id, seat_id, bet)
       flash[:notice] = "You have successfully joined the game! Your seat is No.#{seat_id} "
     end
   rescue => e
@@ -26,7 +26,6 @@ class UserGamesController < ApplicationController
 
   def destroy
     user_id = user_game_params[:user_id].to_i
-    byebug
     if @game.remove_user(user_id)
       flash[:notice] = "You have successfully left the game!"
     end
