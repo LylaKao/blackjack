@@ -29,9 +29,3 @@
 <div id="betUserModal">
  <%= render 'user_games/modal', min_bet: @game.settings.min_bet, seat_id: 0 %>
 </div>
-
-<!-- app/views/home/index.html.erb -->
-<div data-controller="hello">
-  <%= text_area_tag :message, "", data: { hello_target: "message" } %>
-  <%= button_tag "say: hello", data: { action: "hello#send" } %>
-</div>
