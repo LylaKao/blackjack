@@ -1,26 +1,36 @@
-<div class="player panel panel-default">
-  <div class="player-name panel-heading">
-    <%= player&.name %>
-  </div>
-  <div class="player-bet panel-content">
-    <%= "Bet: #{player.bet}" if player && !player.dealer? %>
-  </div>
-  <div class="player-cards panel-content">
-    <% player&.cards&.each do |card| %>
-      <% if card.show || current_user.id == player.id || player.dealer? %>
-        <div class="card">
-          <%= card.suit %>
-          <%= card.rank %>
-        </div>
-      <% else %>
-        <div class="card">
-          **HIDDEN
-          **HIDDEN
+<% if player %>
+  <div class="player list-group h-100">
+    <div class="player-name list-group-item list-group-item-warning">
+      <%= player&.nickname %>
+    </div>
+    <div class="list-group-item h-100">
+      <div class="player-bet">
+        <%= "Bet: #{player.bet}" %>
+      </div>
+      <div class="player-cards">
+        <% player.cards.each do |card| %>
+          <% if card.show || current_user.id == player.id || player.dealer? %>
+            <div class="card">
+              <%= card.suit %>
+              <%= card.rank %>
+            </div>
+          <% else %>
+            <div class="card">
+              **HIDDEN
+              **HIDDEN
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+      <% if player.current_user? %>
+        <div>
+          <%= button_to "Leave", user_game_path(player, user_id: player.user_id), method: :delete, class: "btn btn-default btn-block", data: { confirm: 'Are you sure?' } %>
         </div>
       <% end %>
-    <% end %>
+    </div>
   </div>
-  <div class="player-points panel-content">
-    <%= button_to "Sit Here", new_user_game_path(seat_id: seat_id), method: :get, class: "btn btn-default", remote: true if player.nil? %>
+<% elsif @current_user_seat_id == nil %>
+  <div>
+    <%= button_to "Sit Here", new_user_game_path(seat_id: seat_id), method: :get, class: "btn btn-default btn-block", remote: true if player.nil? %>
   </div>
-</div>
+<% end %>

@@ -4,6 +4,7 @@ class AddGameSettings < ActiveRecord::Migration[7.1]
       t.integer :max_players
       t.integer :min_bet
       t.integer :deck_count
+      t.timestamps
     end
   end
 end

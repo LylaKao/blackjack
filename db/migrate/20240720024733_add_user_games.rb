@@ -6,6 +6,8 @@ class AddUserGames < ActiveRecord::Migration[7.1]
       t.integer :seat_id
       t.integer :bet
       t.json :cards, default: []
+      t.integer :status, default: 0
+      t.timestamps
     end
   end
 end

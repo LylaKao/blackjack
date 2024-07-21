@@ -12,19 +12,28 @@ class UserGamesController < ApplicationController
   end
 
   def create
-    ActiveRecord::Base.transaction do
-      user_game = current_user.user_games.build(game_id: @game.id)
-      user_game.bet = user_game_params[:bet]
-      user_game.seat_id = user_game_params[:seat_id]
-      @game.add_player!(current_user)
-      user_game.save!
+    seat_id = user_game_params[:seat_id]
+    bet = user_game_params[:bet].to_i
+
+    if @game.add_user(current_user, seat_id, bet)
+      flash[:notice] = "You have successfully joined the game! Your seat is No.#{seat_id} "
     end
-    redirect_to game_path
+  rescue => e
+    flash[:alert] = e.message
+  ensure
+    redirect_to root_path
   end
 
   def destroy
-    @game.remove_player(current_user)
-    redirect_to game_path
+    user_id = user_game_params[:user_id].to_i
+    byebug
+    if @game.remove_user(user_id)
+      flash[:notice] = "You have successfully left the game!"
+    end
+  rescue => e
+    flash[:alert] = e.message
+  ensure
+    redirect_to root_path
   end
 
 
@@ -35,6 +44,6 @@ class UserGamesController < ApplicationController
   end
 
   def user_game_params
-    params.permit(:game_id, :seat_id, :bet)
+    params.permit(:user_id, :game_id, :seat_id, :bet)
   end
 end

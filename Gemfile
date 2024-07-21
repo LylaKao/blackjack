@@ -45,6 +45,7 @@ gem "bootsnap", require: false
 # gem "image_processing", "~> 1.2"
 
 gem 'devise'
+gem 'draper'
 gem 'jquery-rails'
 gem 'rails-ujs'
 
@@ -66,6 +67,7 @@ group :development do
 
   gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
   gem 'byebug'
+  gem 'annotate'
 end
 
 group :test do
