@@ -22,6 +22,9 @@ export default consumer.subscriptions.create("GameChannel", {
       case 'user_left':
         this.hide_user(data)
         break;
+      case 'wait_for_seat':
+        this.waiting_user(data)
+        break;
       case 'force_update':
         this.force_update(data)
         break;
@@ -64,7 +67,27 @@ export default consumer.subscriptions.create("GameChannel", {
     }
   },
 
+  waiting_user(data){
+    console.log('wait_for_seat' + data['seat_id'])
+    let playerDivs = document.querySelectorAll("[class^='player_'].list-group.h-100");
+
+    playerDivs.forEach((div) => {
+      if (div.classList.contains(`player_${seat_id}`)) {
+        let playerName = div.querySelector('.player-waiting');
+        if (playerName) {
+          playerName.style.display = 'block';
+        }
+      } else {
+        let playerName = div.querySelector('.player-waiting');
+        if (playerName) {
+          playerName.style.display = 'none';
+        }
+      }
+    });
+  },
+
   force_update(data) {
+    console.log('force_update')
     window.location.reload()
   }
 });

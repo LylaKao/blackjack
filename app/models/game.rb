@@ -53,7 +53,7 @@ class Game < ApplicationRecord
 
   def start_game
     ActiveRecord::Base.transaction do
-      active_user_games
+      active_user_games!
       started!
       update(deck_card_ids: initial_cards)
 
@@ -63,11 +63,53 @@ class Game < ApplicationRecord
       deal_cards_to_active_users
       deal_card_to_dealer
 
+
+      update!(wait_for_seat_id: find_next_seat_id)
       save!
       user_games.map(&:save!)
     end
 
     ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "force_update" })
+  end
+
+  def find_next_seat_id
+    return 0 if actived_users.empty?
+
+    actived_users.map(&:seat_id).sort.first
+  end
+
+  def pass!
+    ActiveRecord::Base.transaction do
+      user_games.find_by(seat_id: wait_for_seat_id).pass!
+
+      next_seat_id = find_next_seat_id
+      update!(wait_for_seat_id: next_seat_id)
+    end
+
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "wait_for_seat", seat_id: wait_for_seat_id })
+  end
+
+  def call!
+    user_game = user_games.find_by(seat_id: wait_for_seat_id)
+    deal_card_to_user(user_game)
+
+    ActiveRecord::Base.transaction do
+      if user_game.score > 21
+        user_game.lose!
+        next_seat_id = find_next_seat_id
+
+        # if next_seat_id == 0
+        #   end_game
+        # end
+
+        update!(wait_for_seat_id: next_seat_id)
+      end
+
+      user_game.save!
+      save!
+    end
+
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: 'force_update' })
   end
 
   def add_user(user_id, seat_id, bet)
@@ -126,7 +168,6 @@ class Game < ApplicationRecord
         end
         user.save!
       end
-
       finished!
     end
 
@@ -147,17 +188,19 @@ class Game < ApplicationRecord
     card_ids.shuffle!
   end
 
-  def active_user_games
+  def active_user_games!
     raise "Not enough players" if user_games.size < 0
     raise "Too many players" if user_games.size > settings.max_players
 
     user_games.map(&:active!)
   end
 
-  def deal_cards_to_active_users
+  def actived_users
     @actived_users ||= user_games.select(&:active?)
+  end
 
-    @actived_users.each do |ug|
+  def deal_cards_to_active_users
+    actived_users.each do |ug|
       deal_card_to_user(ug)
     end
   end

@@ -24,6 +24,22 @@ class UserGamesController < ApplicationController
     redirect_to root_path
   end
 
+  def update
+    user_id = user_game_params[:user_id].to_i
+    user_game = @game.user_games.find_by(user_id: user_id)
+    raise "Data not match" if user_game.nil? || user_game.status != "active"
+
+    action_type = user_game_params[:action_type]
+    case action_type
+    when "pass"
+      @game.pass!
+    when "call"
+      @game.call!
+    end
+
+    redirect_to root_path
+  end
+
   def destroy
     user_id = user_game_params[:user_id].to_i
     if @game.remove_user(user_id)
@@ -43,6 +59,6 @@ class UserGamesController < ApplicationController
   end
 
   def user_game_params
-    params.permit(:user_id, :game_id, :seat_id, :bet)
+    params.permit(:user_id, :game_id, :seat_id, :bet, :action_type)
   end
 end

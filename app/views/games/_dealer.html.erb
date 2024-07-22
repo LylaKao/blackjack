@@ -2,7 +2,7 @@
   <div class="player-name list-group-item list-group-item-danger d-flex justify-content-between">
     <%= Game::DEALER_NAME %>
   </div>
-  <div class="list-group-item h-90 p-3">
+  <div class="list-group-item h-90 p-1">
     <div class="player-cards d-flex">
       <% cards&.each_with_index do |card, idx| %>
         <div class="<%="card_#{idx}"%>" style="margin-left: <%= idx == 0 ? '0px' : '5px' %>;">

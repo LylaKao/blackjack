@@ -4,7 +4,7 @@
     <div class="player-name"><%= player&.nickname || "Empty" %></div>
     <div class="player-bet"><%= "Bet: #{player&.bet || 0}" %></div>
   </div>
-  <div class="list-group-item h-90 p-3">
+  <div class="list-group-item h-90 p-1">
     <div class="player-cards d-flex">
       <% player&.decorate_cards&.each_with_index do |card, idx| %>
         <div class="<%="card_#{idx}"%>" style="margin-left: <%= idx == 0 ? '0px' : '5px' %>;">
@@ -24,6 +24,15 @@
       <% else %>
         <div class="h-100"> Ready </div>
       <% end %>
+    <% elsif @game.started? %>
+      <% if @wait_for_seat_id == seat_id && player&.current_user? %>
+        <div class="btn-group-justified d-flex w-100">
+          <%= button_to "Call", user_game_path(player, user_id: player.user_id, action_type: 'call'), method: :patch, class: "btn btn-default w-100 me-2" %>
+          <%= button_to "Pass", user_game_path(player, user_id: player.user_id, action_type: 'pass'), method: :patch, class: "btn btn-default w-100 me-2" %>
+        </div>
+      <% end %>
+      <% show_waiting = @wait_for_seat_id == seat_id && !player&.current_user? %>
+      <div class="player-waiting" style="display: <%= show_waiting ? 'block' : 'none' %>"> Thinking... </div>
     <% elsif @game.finished? %>
       <div>
         <%= "#{player&.status&.upcase} (#{player&.score})" %>

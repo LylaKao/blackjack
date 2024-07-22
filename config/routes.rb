@@ -19,5 +19,5 @@ Rails.application.routes.draw do
   post 'end_game' => 'games#end_game'
   post 'restart_game' => 'games#restart_game'
 
-  resources :user_games, only: [:new, :create, :destroy]
+  resources :user_games, only: [:new, :update, :create, :destroy]
 end

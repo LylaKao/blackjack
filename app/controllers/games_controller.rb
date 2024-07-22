@@ -12,6 +12,7 @@ class GamesController < ApplicationController
       hash[n] = UserGameDecorator.new(user_game, is_current_user) if user_game
     end
 
+    @wait_for_seat_id = @game.wait_for_seat_id
     @dealer_cards = @game.cards.decorate
     @dealer_score = @game.dealer_score
   end

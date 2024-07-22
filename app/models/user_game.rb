@@ -18,7 +18,7 @@ class UserGame < ApplicationRecord
   belongs_to :user
   belongs_to :game
 
-  enum status: { pending: 0, active: 1, win: 2, lose: 3, draw: 4 }
+  enum status: { pending: 0, active: 1, pass: 2, win: 3, lose: 4, draw: 5 }
 
   delegate :nickname, to: :user
 
