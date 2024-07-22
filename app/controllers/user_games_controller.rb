@@ -25,18 +25,23 @@ class UserGamesController < ApplicationController
   end
 
   def update
-    user_id = user_game_params[:user_id].to_i
-    user_game = @game.user_games.find_by(user_id: user_id)
-    raise "Data not match" if user_game.nil? || user_game.status != "active"
-
     action_type = user_game_params[:action_type]
-    case action_type
-    when "pass"
-      @game.pass!
-    when "call"
-      @game.call!
-    end
+    if current_user.admin?
+      if action_type == "call"
+        @game.deal_card_to_dealer!
+      end
+    else
+      user_id = user_game_params[:user_id].to_i
+      user_game = @game.user_games.find_by(user_id: user_id)
+      raise "Data not match" if user_game.nil? || user_game.status != "active"
 
+      case action_type
+      when "pass"
+        @game.pass!
+      when "call"
+        @game.call!
+      end
+    end
     redirect_to root_path
   end
 

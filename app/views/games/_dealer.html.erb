@@ -6,7 +6,7 @@
     <div class="player-cards d-flex">
       <% cards&.each_with_index do |card, idx| %>
         <div class="<%="card_#{idx}"%>" style="margin-left: <%= idx == 0 ? '0px' : '5px' %>;">
-          <% if idx == 0 && (!ENV['DEBUG'] && @game.started?) %>
+          <% if idx == 0 && (!ENV['DEBUG'] && @game.started?) && !current_user.admin? && @wait_for_seat_id != 0  %>
             <%= card.hidden_icon %>
           <% else %>
             <%= card.to_s %>
@@ -14,13 +14,20 @@
         </div>
       <% end %>
     </div>
+    <% if @game.dealer_score > 21 %>
+      <span class="badge badge-danger" style="margin-left: 5px">Boom!</span>
+    <% end %>
     <% if @game.finished? %>
       <div>
         <%= "Score: #{@dealer_score}" %>
       </div>
+    <% elsif @game.started? && @wait_for_seat_id == 0 && current_user&.admin? %>
+      <div>
+        <%= button_to "Call", user_game_path(id: 0, user_id: current_user.id, action_type: 'call'), method: :patch, class: "btn btn-default btn-block" %>
+      </div>
     <% end %>
   </div>
-  <% if current_user&.email == "admin@aktsk.com" %>
+  <% if current_user&.admin? %>
     <% if @game.status == "pending" %>
       <div>
         <%= button_to "Start", start_game_path, method: :post, class: "btn btn-default btn-block" %>

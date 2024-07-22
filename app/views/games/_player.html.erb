@@ -8,12 +8,15 @@
     <div class="player-cards d-flex">
       <% player&.decorate_cards&.each_with_index do |card, idx| %>
         <div class="<%="card_#{idx}"%>" style="margin-left: <%= idx == 0 ? '0px' : '5px' %>;">
-          <% if idx == 0 && current_user&.id != player.id && (!ENV['DEBUG'] && @game.started?) %>
-            <%= card.hidden_icon %>
-          <% else %>
+          <% if card.seeable?(idx, player&.status) || player&.user_id == current_user&.id %>
             <%= card.to_s %>
+          <% else %>
+            <%= card.hidden_icon %>
           <% end %>
         </div>
+      <% end %>
+      <% if player&.status == "lose" && @game.status == "started" %>
+        <span class="badge badge-danger" style="margin-left: 5px">Boom!</span>
       <% end %>
     </div>
     <% if @game.pending? %>
@@ -38,11 +41,11 @@
         <%= "#{player&.status&.upcase} (#{player&.score})" %>
         <% case player&.status %>
         <% when "win" %>
-          <span class="badge badge-success"><%="+#{player&.bet}"%></span>
+          <span class="badge badge-success"><%="+#{player&.bet_result}"%></span>
         <% when "draw" %>
           <span class="badge badge-warning">0</span>
         <% when "lose" %>
-          <span class="badge badge-danger"><%="-#{player&.bet}"%></span>
+          <span class="badge badge-danger"><%="#{player&.bet_result}"%></span>
         <% end %>
       </div>
     <% end %>

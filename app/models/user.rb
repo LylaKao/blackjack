@@ -20,4 +20,8 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :user_games
+
+  def admin?
+    email == "admin@aktsk.com"
+  end
 end

@@ -9,7 +9,7 @@ class GamesController < ApplicationController
       user_game = @game.user_games.includes(:user).find_by(seat_id: n)
       is_current_user = current_user && user_game&.user_id == current_user.id
       @current_user_seat_id = n if is_current_user
-      hash[n] = UserGameDecorator.new(user_game, is_current_user) if user_game
+      hash[n] = user_game ? UserGameDecorator.new(user_game, is_current_user) : nil
     end
 
     @wait_for_seat_id = @game.wait_for_seat_id

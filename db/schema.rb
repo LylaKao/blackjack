@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_22_170423) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_22_200501) do
   create_table "cards", force: :cascade do |t|
     t.string "suit"
     t.string "rank"
@@ -51,6 +51,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_22_170423) do
     t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "bet_result", default: 0
     t.index ["game_id"], name: "index_game_id"
     t.index ["user_id"], name: "index_user_id"
   end

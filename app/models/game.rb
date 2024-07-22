@@ -86,7 +86,8 @@ class Game < ApplicationRecord
       update!(wait_for_seat_id: next_seat_id)
     end
 
-    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "wait_for_seat", seat_id: wait_for_seat_id })
+    # ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "wait_for_seat", seat_id: wait_for_seat_id })
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "force_update" })
   end
 
   def call!
@@ -97,11 +98,6 @@ class Game < ApplicationRecord
       if user_game.score > 21
         user_game.lose!
         next_seat_id = find_next_seat_id
-
-        # if next_seat_id == 0
-        #   end_game
-        # end
-
         update!(wait_for_seat_id: next_seat_id)
       end
 
@@ -110,6 +106,17 @@ class Game < ApplicationRecord
     end
 
     ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: 'force_update' })
+  end
+
+  def deal_card_to_dealer!
+    deal_card_to_dealer
+    save!
+
+    if dealer_score > 21
+      end_game
+    else
+      ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "force_update" })
+    end
   end
 
   def add_user(user_id, seat_id, bet)
@@ -155,17 +162,18 @@ class Game < ApplicationRecord
         user = ug.user
         if ug.score > dealer_score && ug.score <= 21
           ceof = ug.score == 21 ? 2 : 1
-          user.point += ug.bet * ceof
+          ug.bet_result = ug.bet * ceof
           ug.win!
         elsif ug.score <= 21 && dealer_score > 21
-          user.point += ug.bet
+          ug.bet_result = ug.bet
           ug.win!
         elsif ug.score == dealer_score
           ug.draw!
         else
-          user.point -= ug.bet
+          ug.bet_result = ug.bet * (-1)
           ug.lose!
         end
+        user.point += ug.bet_result
         user.save!
       end
       finished!
