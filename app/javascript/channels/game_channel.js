@@ -22,6 +22,9 @@ export default consumer.subscriptions.create("GameChannel", {
       case 'user_left':
         this.hide_user(data)
         break;
+      case 'force_update':
+        this.force_update(data)
+        break;
     }
   },
 
@@ -41,6 +44,11 @@ export default consumer.subscriptions.create("GameChannel", {
           betElement.textContent = "Bet:" + data['bet'];
       }
     }
+
+    let sitBtnDiv = document.querySelector(`.sit_${data['seat_id']}`);
+    if(sitBtnDiv) {
+      sitBtnDiv.style.display = 'none';
+    }
   },
 
   hide_user(data){
@@ -49,5 +57,14 @@ export default consumer.subscriptions.create("GameChannel", {
     if (playerDiv) {
         playerDiv.style.display = 'none';
     }
+
+    let sitBtnDiv = document.querySelector(`.sit_${data['seat_id']}`);
+    if(sitBtnDiv) {
+      sitBtnDiv.style.display = 'block';
+    }
+  },
+
+  force_update(data) {
+    window.location.reload()
   }
 });

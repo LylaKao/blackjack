@@ -7,3 +7,12 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+Card::SUITS.each do |suit|
+  Card::RANKS.each do |rank|
+    card = Card.new
+    card.suit = suit
+    card.rank = rank
+    card.save
+  end
+end

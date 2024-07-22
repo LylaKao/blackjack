@@ -2,17 +2,16 @@
 #
 # Table name: games
 #
-#  id           :integer          not null, primary key
-#  settings_id  :integer
-#  dealer_cards :json
-#  deck_cards   :json
-#  players      :json
-#  status       :integer          default("pending")
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id              :integer          not null, primary key
+#  settings_id     :integer
+#  dealer_card_ids :json
+#  deck_card_ids   :json
+#  status          :integer          default("pending")
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
 #
 class Game < ApplicationRecord
-  attr_reader :dealer
+  include Scoreable
 
   DEFAULT_SETTINGS_ID = 1
   DEALER_NAME = "Dealer"
@@ -25,33 +24,50 @@ class Game < ApplicationRecord
   def self.create_or_get_current_game(settings_id = DEFAULT_SETTINGS_ID)
     game = Game.last
 
-    if game.nil?
-      game = Game.new
-      game.settings = GameSetting.find(settings_id)
-      game.save! if game.new_record?
-    end
-
+    game = create_new_game(settings_id) if game.nil?
     game
   end
 
-  def start_game
-    active_user_games
-    initial_cards
+  def self.create_new_game(settings_id = DEFAULT_SETTINGS_ID)
+    ActiveRecord::Base.transaction do
+      # prev_game = Game.last
+      # prev_user_ids = prev_game&.user_games&.pluck(:user_id) || []
 
-    show = false
-    deal_cards_to_active_players(show)
-    deal_card_to_dealer(show)
+      game = Game.new
+      game.settings = GameSetting.find(settings_id)
+      game.save!
 
-    show = true
-    deal_cards_to_active_players(show)
-    deal_card_to_dealer(show)
+      # prev_user_ids.each do |user_id|
+      #   user = User.find(user_id)
+      #   user.user_games.create!(game_id: game.id)
+      # end
+      ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "force_update" })
+      game
+    end
   end
 
-  def active_user_games
-    raise "Not enough players" if active_user_games.size < 0
-    raise "Too many players" if active_user_games.size > settings.max_players
+  # for Scoreable
+  def card_ids
+    dealer_card_ids
+  end
 
-    active_user_games.values.map(&:active!)
+  def start_game
+    ActiveRecord::Base.transaction do
+      active_user_games
+      started!
+      update(deck_card_ids: initial_cards)
+
+      deal_cards_to_active_users
+      deal_card_to_dealer
+
+      deal_cards_to_active_users
+      deal_card_to_dealer
+
+      save!
+      user_games.map(&:save!)
+    end
+
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "force_update" })
   end
 
   def add_user(user_id, seat_id, bet)
@@ -81,33 +97,68 @@ class Game < ApplicationRecord
     ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "user_left", seat_id: seat_id })
   end
 
-  def deal_cards_to_active_users(show = true)
-    @actived_users ||= user_games.select do |ug|
-      ug.active?
-    end
-
-    @actived_users.each do |ug|
-      deal_card_to_user(ug, show)
-    end
+  def deal_card_to_user(user_game)
+    card_id = deck_card_ids.pop
+    user_game.take_card(card_id)
   end
 
-  def deal_card_to_user(user_game, show = true)
-    user_game.take_card(deck_cards.pop, show)
+  def deal_card_to_dealer
+    card_id = deck_card_ids.pop
+    dealer_card_ids << card_id
   end
 
-  def deal_card_to_dealer(show = true)
-    card = deck_cards.pop
-    card.show = show
-    dealer_cards << card
+  def end_game
+    ActiveRecord::Base.transaction do
+      user_games.each do |ug|
+        user = ug.user
+        if ug.score > dealer_score && ug.score <= 21
+          ceof = ug.score == 21 ? 2 : 1
+          user.point += ug.bet * ceof
+          ug.win!
+        elsif ug.score <= 21 && dealer_score > 21
+          user.point += ug.bet
+          ug.win!
+        elsif ug.score == dealer_score
+          ug.draw!
+        else
+          user.point -= ug.bet
+          ug.lose!
+        end
+        user.save!
+      end
+
+      finished!
+    end
+
+    ActionCable.server.broadcast(GameChannel::CHANNEL_NAME, { type: "force_update" })
+  end
+
+  def dealer_score
+    score
   end
 
   private
 
   def initial_cards
-    deck_cards = []
+    card_ids = []
     settings.deck_count.times do
-      deck_cards += Deck.new.cards
+      card_ids += Card.all.pluck(:id)
     end
-    deck_cards.shuffle!
+    card_ids.shuffle!
+  end
+
+  def active_user_games
+    raise "Not enough players" if user_games.size < 0
+    raise "Too many players" if user_games.size > settings.max_players
+
+    user_games.map(&:active!)
+  end
+
+  def deal_cards_to_active_users
+    @actived_users ||= user_games.select(&:active?)
+
+    @actived_users.each do |ug|
+      deal_card_to_user(ug)
+    end
   end
 end

@@ -10,7 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_21_035202) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_22_134917) do
+  create_table "cards", force: :cascade do |t|
+    t.string "suit"
+    t.string "rank"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "game_settings", force: :cascade do |t|
     t.integer "max_players"
     t.integer "min_bet"
@@ -21,9 +28,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_21_035202) do
 
   create_table "games", force: :cascade do |t|
     t.integer "settings_id"
-    t.json "dealer_cards", default: []
-    t.json "deck_cards", default: []
-    t.json "players", default: {}
+    t.json "dealer_card_ids", default: []
+    t.json "deck_card_ids", default: []
     t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -40,7 +46,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_21_035202) do
     t.integer "game_id"
     t.integer "seat_id"
     t.integer "bet"
-    t.json "cards", default: []
+    t.json "card_ids", default: []
     t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

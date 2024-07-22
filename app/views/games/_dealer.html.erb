@@ -1,0 +1,38 @@
+<div class="dealer list-group h-100">
+  <div class="player-name list-group-item list-group-item-danger d-flex justify-content-between">
+    <%= Game::DEALER_NAME %>
+  </div>
+  <div class="list-group-item h-90 p-3">
+    <div class="player-cards d-flex">
+      <% cards&.each_with_index do |card, idx| %>
+        <div class="<%="card_#{idx}"%>" style="margin-left: <%= idx == 0 ? '0px' : '5px' %>;">
+          <% if idx == 0 && (!ENV['DEBUG'] && @game.started?) %>
+            <%= card.hidden_icon %>
+          <% else %>
+            <%= card.to_s %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <% if @game.finished? %>
+      <div>
+        <%= "Score: #{@dealer_score}" %>
+      </div>
+    <% end %>
+  </div>
+  <% if current_user&.email == "admin@aktsk.com" %>
+    <% if @game.status == "pending" %>
+      <div>
+        <%= button_to "Start", start_game_path, method: :post, class: "btn btn-default btn-block" %>
+      </div>
+    <% elsif @game.status == "started" %>
+      <div>
+        <%= button_to "End", end_game_path, method: :post, class: "btn btn-default btn-block" %>
+      </div>
+    <% elsif @game.status == "finished" %>
+      <div>
+        <%= button_to "Create New Game", restart_game_path, method: :post, class: "btn btn-default btn-block" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

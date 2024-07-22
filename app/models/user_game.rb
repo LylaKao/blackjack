@@ -7,50 +7,30 @@
 #  game_id    :integer
 #  seat_id    :integer
 #  bet        :integer
-#  cards      :json
+#  card_ids   :json
 #  status     :integer          default("pending")
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
 class UserGame < ApplicationRecord
+  include Scoreable
+
   belongs_to :user
   belongs_to :game
 
-  enum status: { pending: 0, active: 1 }
+  enum status: { pending: 0, active: 1, win: 2, lose: 3, draw: 4 }
 
   delegate :nickname, to: :user
-
-  def active?
-    status == :active
-  end
 
   def active!
     update!(status: :active)
   end
 
-  def take_card(card)
-    cards << card
+  def take_card(card_id)
+    card_ids << card_id
   end
 
-  def score
-    score = 0
-    ace_count = 0
-
-    cards.each do |card|
-      if card.rank == "A"
-        ace_count += 1
-        score += 11
-      else
-        # J, Q, K count as 10
-        score += card.rank.to_i == 0 ? 10 : card.rank.to_i
-      end
-    end
-
-    while score > 21 && ace_count > 0
-      score -= 10
-      ace_count -= 1
-    end
-
-    score
+  def decorate_cards
+    cards.map(&:decorate)
   end
 end

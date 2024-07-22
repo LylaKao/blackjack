@@ -1,0 +1,46 @@
+<% hidden = player == nil %>
+<div class="<%="player_#{seat_id}"%> list-group h-100" style="display: <%= hidden ? 'none' : 'block' %>;">
+  <div class="player-title list-group-item list-group-item-warning d-flex justify-content-between">
+    <div class="player-name"><%= player&.nickname || "Empty" %></div>
+    <div class="player-bet"><%= "Bet: #{player&.bet || 0}" %></div>
+  </div>
+  <div class="list-group-item h-90 p-3">
+    <div class="player-cards d-flex">
+      <% player&.decorate_cards&.each_with_index do |card, idx| %>
+        <div class="<%="card_#{idx}"%>" style="margin-left: <%= idx == 0 ? '0px' : '5px' %>;">
+          <% if idx == 0 && current_user&.id != player.id && (!ENV['DEBUG'] && @game.started?) %>
+            <%= card.hidden_icon %>
+          <% else %>
+            <%= card.to_s %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <% if @game.pending? %>
+      <% if player&.current_user? %>
+        <div>
+          <%= button_to "Leave", user_game_path(player, user_id: player.user_id), method: :delete, class: "btn btn-default btn-block", data: { confirm: 'Are you sure?' } %>
+        </div>
+      <% else %>
+        <div class="h-100"> Ready </div>
+      <% end %>
+    <% elsif @game.finished? %>
+      <div>
+        <%= "#{player&.status&.upcase} (#{player&.score})" %>
+        <% case player&.status %>
+        <% when "win" %>
+          <span class="badge badge-success"><%="+#{player&.bet}"%></span>
+        <% when "draw" %>
+          <span class="badge badge-warning">0</span>
+        <% when "lose" %>
+          <span class="badge badge-danger"><%="-#{player&.bet}"%></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+<% if @current_user_seat_id == nil && @game.status == "pending" %>
+  <div class="<%="sit_#{seat_id}"%>">
+    <%= link_to "Sit Here", new_user_game_path({seat_id: seat_id}), class: "btn btn-default btn-block", remote: true if player.nil? %>
+  </div>
+<% end %>
